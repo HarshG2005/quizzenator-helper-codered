@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { generateQuiz } from '@/services/quizService';
-import type { QuizState, QuizResult, QuizConfig } from '@/types/quiz';
+import type { QuizState, QuizResult } from '@/types/quiz';
 import { Loader2 } from "lucide-react";
-import QuizConfig from './QuizConfig';
+import QuizConfigComponent from './QuizConfig';
 import QuizQuestion from './QuizQuestion';
 import QuizResults from './QuizResults';
+import type { QuizConfig } from '@/types/quiz';
 
 const Quiz = () => {
   const { toast } = useToast();
@@ -114,7 +115,7 @@ const Quiz = () => {
           </h1>
           
           {!quizState.questions.length && !quizState.isLoading && (
-            <QuizConfig onStart={handleStartQuiz} isLoading={quizState.isLoading} />
+            <QuizConfigComponent onStart={handleStartQuiz} isLoading={quizState.isLoading} />
           )}
 
           {quizState.isLoading && (

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ interface QuizConfigProps {
   isLoading: boolean;
 }
 
-const QuizConfig = ({ onStart, isLoading }: QuizConfigProps) => {
+const QuizConfigComponent = ({ onStart, isLoading }: QuizConfigProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [config, setConfig] = useState<QuizConfig>({
@@ -145,4 +146,4 @@ const QuizConfig = ({ onStart, isLoading }: QuizConfigProps) => {
   );
 };
 
-export default QuizConfig;
+export default QuizConfigComponent;
