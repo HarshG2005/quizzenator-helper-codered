@@ -4,6 +4,13 @@ export interface Question {
   correctAnswer: string;
 }
 
+export interface QuizConfig {
+  numberOfQuestions: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  timeLimit: number; // in seconds per question
+  topic: string;
+}
+
 export interface QuizState {
   questions: Question[];
   currentQuestionIndex: number;
@@ -12,6 +19,7 @@ export interface QuizState {
   isLoading: boolean;
   error: string | null;
   userAnswers: string[];
+  timeRemaining: number;
 }
 
 export interface QuizResult {
