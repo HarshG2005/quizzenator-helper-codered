@@ -11,4 +11,12 @@ export interface QuizState {
   showResults: boolean;
   isLoading: boolean;
   error: string | null;
+  userAnswers: string[];
+}
+
+export interface QuizResult {
+  question: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
 }

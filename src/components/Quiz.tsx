@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { generateQuiz } from '@/services/quizService';
-import type { Question, QuizState } from '@/types/quiz';
-import { Loader2 } from "lucide-react";
+import type { Question, QuizState, QuizResult } from '@/types/quiz';
+import { Loader2, Upload } from "lucide-react";
 
 const Quiz = () => {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [topic, setTopic] = useState('');
   const [quizState, setQuizState] = useState<QuizState>({
     questions: [],
@@ -17,6 +18,7 @@ const Quiz = () => {
     showResults: false,
     isLoading: false,
     error: null,
+    userAnswers: [],
   });
 
   const handleStartQuiz = async () => {
@@ -40,6 +42,7 @@ const Quiz = () => {
         score: 0,
         showResults: false,
         isLoading: false,
+        userAnswers: [],
       }));
     } catch (error) {
       setQuizState(prev => ({
@@ -56,24 +59,11 @@ const Quiz = () => {
   };
 
   const handleAnswer = (selectedAnswer: string) => {
-    const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-
-    if (isCorrect) {
-      toast({
-        title: "Correct!",
-        description: "Great job! Keep going!",
-        className: "bg-green-500 text-white",
-      });
-    } else {
-      toast({
-        title: "Incorrect",
-        description: `The correct answer was: ${currentQuestion.correctAnswer}`,
-        variant: "destructive",
-      });
-    }
-
     setQuizState(prev => {
+      const newUserAnswers = [...prev.userAnswers];
+      newUserAnswers[prev.currentQuestionIndex] = selectedAnswer;
+      
+      const isCorrect = selectedAnswer === prev.questions[prev.currentQuestionIndex].correctAnswer;
       const newScore = isCorrect ? prev.score + 1 : prev.score;
       const newIndex = prev.currentQuestionIndex + 1;
       const showResults = newIndex >= prev.questions.length;
@@ -83,6 +73,7 @@ const Quiz = () => {
         score: newScore,
         currentQuestionIndex: newIndex,
         showResults,
+        userAnswers: newUserAnswers,
       };
     });
   };
@@ -95,8 +86,37 @@ const Quiz = () => {
       showResults: false,
       isLoading: false,
       error: null,
+      userAnswers: [],
     });
     setTopic('');
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      // For now, just set the filename as the topic
+      // In a real implementation, you would process the PDF
+      setTopic(file.name.replace('.pdf', ''));
+      toast({
+        title: "PDF Uploaded",
+        description: "PDF processing is not implemented yet. Using filename as topic.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Please upload a PDF file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getQuizResults = (): QuizResult[] => {
+    return quizState.questions.map((question, index) => ({
+      question: question.question,
+      userAnswer: quizState.userAnswers[index],
+      correctAnswer: question.correctAnswer,
+      isCorrect: quizState.userAnswers[index] === question.correctAnswer,
+    }));
   };
 
   const renderQuestion = (question: Question) => (
@@ -107,7 +127,7 @@ const Quiz = () => {
           <Button
             key={index}
             variant="outline"
-            className="p-4 text-left h-auto"
+            className="p-4 text-left h-auto hover:bg-primary/10 transition-all duration-300"
             onClick={() => handleAnswer(option)}
           >
             {option}
@@ -117,39 +137,85 @@ const Quiz = () => {
     </div>
   );
 
-  const renderResults = () => (
-    <div className="quiz-appear text-center space-y-4">
-      <h2 className="text-2xl font-bold mb-4">Quiz Complete!</h2>
-      <p className="text-xl">
-        Your score: {quizState.score} out of {quizState.questions.length}
-      </p>
-      <p className="text-lg">
-        Percentage: {((quizState.score / quizState.questions.length) * 100).toFixed(1)}%
-      </p>
-      <Button onClick={handleReset} className="mt-4">
-        Start New Quiz
-      </Button>
-    </div>
-  );
+  const renderResults = () => {
+    const results = getQuizResults();
+    return (
+      <div className="quiz-appear space-y-6">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-3xl font-bold mb-4">Quiz Complete!</h2>
+          <p className="text-2xl">
+            Your score: {quizState.score} out of {quizState.questions.length}
+          </p>
+          <p className="text-xl">
+            ({((quizState.score / quizState.questions.length) * 100).toFixed(1)}%)
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          {results.map((result, index) => (
+            <Card key={index} className={`p-4 border-l-4 ${
+              result.isCorrect ? 'border-l-green-500 bg-green-50' : 'border-l-red-500 bg-red-50'
+            }`}>
+              <h3 className="font-semibold mb-2">{result.question}</h3>
+              <p className={result.isCorrect ? 'text-green-700' : 'text-red-700'}>
+                Your answer: {result.userAnswer}
+              </p>
+              {!result.isCorrect && (
+                <p className="text-green-700 mt-1">
+                  Correct answer: {result.correctAnswer}
+                </p>
+              )}
+            </Card>
+          ))}
+        </div>
+        
+        <Button 
+          onClick={handleReset}
+          className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+        >
+          Start New Quiz
+        </Button>
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-indigo-50 to-blue-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <div className="max-w-2xl mx-auto">
-        <Card className="p-6 shadow-lg">
-          <h1 className="text-3xl font-bold text-center mb-8 text-primary">AI Quiz Generator</h1>
+        <Card className="p-6 shadow-xl bg-white/80 backdrop-blur-sm">
+          <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
+            AI Quiz Generator
+          </h1>
           
           {!quizState.questions.length && !quizState.isLoading && (
             <div className="space-y-4">
-              <Input
-                type="text"
-                placeholder="Enter a topic (e.g., 'Ancient Rome', 'Quantum Physics')"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="mb-4"
-              />
+              <div className="flex gap-4">
+                <Input
+                  type="text"
+                  placeholder="Enter a topic (e.g., 'Ancient Rome', 'Quantum Physics')"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  className="flex-1"
+                />
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  ref={fileInputRef}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="whitespace-nowrap"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload PDF
+                </Button>
+              </div>
               <Button 
                 onClick={handleStartQuiz}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all duration-300"
                 disabled={quizState.isLoading}
               >
                 Generate Quiz
@@ -159,8 +225,8 @@ const Quiz = () => {
 
           {quizState.isLoading && (
             <div className="text-center py-8">
-              <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4" />
-              <p>Generating your quiz...</p>
+              <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4 text-indigo-600" />
+              <p className="text-indigo-600">Generating your quiz...</p>
             </div>
           )}
 
