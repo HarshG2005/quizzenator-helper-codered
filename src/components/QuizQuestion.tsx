@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import type { Question } from "@/types/quiz";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Book } from "lucide-react";
 
 interface QuizQuestionProps {
   question: Question;
@@ -14,18 +16,29 @@ const QuizQuestion = ({
   question, 
   currentIndex, 
   totalQuestions, 
-  timeRemaining,
+  timeRemaining: initialTime,
   onAnswer 
 }: QuizQuestionProps) => {
+  const [timeRemaining, setTimeRemaining] = useState(initialTime);
+
   useEffect(() => {
     const timer = setInterval(() => {
-      if (timeRemaining === 0) {
-        onAnswer(''); // Submit empty answer when time runs out
-      }
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onAnswer(''); // Submit empty answer when time runs out
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining, onAnswer]);
+  }, [onAnswer]);
+
+  useEffect(() => {
+    setTimeRemaining(initialTime);
+  }, [initialTime, question]);
 
   return (
     <div>
@@ -51,6 +64,15 @@ const QuizQuestion = ({
               {option}
             </Button>
           ))}
+        </div>
+
+        <div className="mt-8 flex items-center justify-center">
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/resources">
+              <Book className="w-4 h-4" />
+              View Study Resources
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
