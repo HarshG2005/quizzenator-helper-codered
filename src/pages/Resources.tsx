@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Book, Calculator, Flask, Globe, History, Microscope } from "lucide-react";
+import { Book, Calculator, TestTube, Globe, History, Microscope } from "lucide-react";
 
 const subjects = [
   {
@@ -13,7 +13,7 @@ const subjects = [
   },
   {
     name: "Science",
-    icon: Flask,
+    icon: TestTube,
     description: "Physics, Chemistry, Biology",
     resources: ["Coursera", "edX", "Science Daily"],
     color: "from-green-500 to-teal-500"
