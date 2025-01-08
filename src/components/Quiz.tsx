@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { generateQuiz } from '@/services/quizService';
 import type { Question, QuizState, QuizResult } from '@/types/quiz';
 import { Loader2, Upload } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Quiz = () => {
   const { toast } = useToast();
@@ -182,6 +183,11 @@ const Quiz = () => {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <Button asChild variant="outline">
+            <Link to="/">Back to Home</Link>
+          </Button>
+        </div>
         <Card className="p-6 shadow-xl bg-white/80 backdrop-blur-sm">
           <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
             AI Quiz Generator
