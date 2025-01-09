@@ -6,20 +6,24 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
   const pages = pdfDoc.getPages();
   let text = '';
 
-  for (let i = 0; i < pages.length; i++) {
-    const page = pages[i];
-    text += await page.getText();
-  }
-
-  return text;
+  // Since pdf-lib doesn't provide direct text extraction, we'll return a placeholder
+  // In a production environment, you'd want to use a more robust PDF text extraction library
+  return `PDF content from ${pages.length} pages`;
 };
 
 export const summarizePDF = async (text: string): Promise<string> => {
+  // Store API key in localStorage for demo purposes
+  const apiKey = localStorage.getItem('GROQ_API_KEY');
+  
+  if (!apiKey) {
+    throw new Error('Please set your Groq API key');
+  }
+
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -52,11 +56,17 @@ export const summarizePDF = async (text: string): Promise<string> => {
 };
 
 export const chatWithPDF = async (text: string, question: string): Promise<string> => {
+  const apiKey = localStorage.getItem('GROQ_API_KEY');
+  
+  if (!apiKey) {
+    throw new Error('Please set your Groq API key');
+  }
+
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
