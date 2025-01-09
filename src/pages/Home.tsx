@@ -13,7 +13,7 @@ const Home = () => {
           Your AI-powered learning companion
         </p>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Card className="p-6 hover:shadow-lg transition-shadow">
             <h2 className="text-2xl font-semibold mb-4 gradient-text">Take a Quiz</h2>
             <p className="text-gray-600 mb-6">
@@ -31,6 +31,16 @@ const Home = () => {
             </p>
             <Button asChild className="w-full bg-gradient-to-r from-purple-500 to-pink-500">
               <Link to="/resources">View Resources</Link>
+            </Button>
+          </Card>
+
+          <Card className="p-6 hover:shadow-lg transition-shadow">
+            <h2 className="text-2xl font-semibold mb-4 gradient-text">Dashboard</h2>
+            <p className="text-gray-600 mb-6">
+              View your progress, leaderboard, and quiz history
+            </p>
+            <Button asChild className="w-full bg-gradient-to-r from-pink-500 to-red-500">
+              <Link to="/dashboard">View Dashboard</Link>
             </Button>
           </Card>
         </div>

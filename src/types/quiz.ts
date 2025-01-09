@@ -7,7 +7,7 @@ export interface Question {
 export interface QuizConfig {
   numberOfQuestions: number;
   difficulty: 'easy' | 'medium' | 'hard';
-  timeLimit: number; // in seconds per question
+  timeLimit: number;
   topic: string;
 }
 
@@ -27,4 +27,32 @@ export interface QuizResult {
   userAnswer: string;
   correctAnswer: string;
   isCorrect: boolean;
+}
+
+export interface QuizHistory {
+  id: string;
+  date: string;
+  topic: string;
+  score: number;
+  totalQuestions: number;
+  difficulty: QuizConfig['difficulty'];
+}
+
+export interface LeaderboardEntry {
+  username: string;
+  score: number;
+  topic: string;
+  date: string;
+}
+
+export interface DashboardStats {
+  totalQuizzesTaken: number;
+  averageScore: number;
+  bestTopic: string;
+  worstTopic: string;
+  quizzesByDifficulty: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
 }

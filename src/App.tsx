@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Resources from "./pages/Resources";
 import Quiz from "./components/Quiz";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster />
