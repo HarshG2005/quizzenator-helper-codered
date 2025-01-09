@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/ba57094e-88ec-4124-9c00-e045ec581537
+**URL**: https://tinyurl.com/3y8ju6h2
 
 ## How can I edit this code?
 
@@ -12,7 +12,7 @@ There are several ways of editing your application.
 
 If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updatin)
 
 Follow these steps:
 
