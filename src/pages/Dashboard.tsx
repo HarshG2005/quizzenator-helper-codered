@@ -3,6 +3,7 @@ import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import type { DashboardStats, QuizHistory, LeaderboardEntry } from "@/types/quiz";
+import { Trophy, ChartBar, History, Brain } from "lucide-react";
 
 // Mock data - replace with actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => ({
@@ -59,20 +60,40 @@ const Dashboard = () => {
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="p-6">
-            <h3 className="text-lg font-medium mb-2">Total Quizzes</h3>
-            <p className="text-3xl font-bold">{stats?.totalQuizzesTaken}</p>
+            <div className="flex items-center gap-4">
+              <ChartBar className="w-8 h-8 text-indigo-500" />
+              <div>
+                <h3 className="text-lg font-medium mb-2">Total Quizzes</h3>
+                <p className="text-3xl font-bold">{stats?.totalQuizzesTaken}</p>
+              </div>
+            </div>
           </Card>
           <Card className="p-6">
-            <h3 className="text-lg font-medium mb-2">Average Score</h3>
-            <p className="text-3xl font-bold">{stats?.averageScore}%</p>
+            <div className="flex items-center gap-4">
+              <Brain className="w-8 h-8 text-purple-500" />
+              <div>
+                <h3 className="text-lg font-medium mb-2">Average Score</h3>
+                <p className="text-3xl font-bold">{stats?.averageScore}%</p>
+              </div>
+            </div>
           </Card>
           <Card className="p-6">
-            <h3 className="text-lg font-medium mb-2">Best Topic</h3>
-            <p className="text-3xl font-bold">{stats?.bestTopic}</p>
+            <div className="flex items-center gap-4">
+              <Trophy className="w-8 h-8 text-yellow-500" />
+              <div>
+                <h3 className="text-lg font-medium mb-2">Best Topic</h3>
+                <p className="text-3xl font-bold">{stats?.bestTopic}</p>
+              </div>
+            </div>
           </Card>
           <Card className="p-6">
-            <h3 className="text-lg font-medium mb-2">Needs Improvement</h3>
-            <p className="text-3xl font-bold">{stats?.worstTopic}</p>
+            <div className="flex items-center gap-4">
+              <History className="w-8 h-8 text-rose-500" />
+              <div>
+                <h3 className="text-lg font-medium mb-2">Needs Improvement</h3>
+                <p className="text-3xl font-bold">{stats?.worstTopic}</p>
+              </div>
+            </div>
           </Card>
         </div>
 

@@ -35,7 +35,7 @@ export interface QuizHistory {
   topic: string;
   score: number;
   totalQuestions: number;
-  difficulty: QuizConfig['difficulty'];
+  difficulty: 'easy' | 'medium' | 'hard';
 }
 
 export interface LeaderboardEntry {
