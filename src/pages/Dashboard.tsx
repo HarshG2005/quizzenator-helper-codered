@@ -4,46 +4,71 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import type { DashboardStats, QuizHistory, LeaderboardEntry } from "@/types/quiz";
 import { Trophy, ChartBar, History, Brain } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data - replace with actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => ({
-  totalQuizzesTaken: 25,
-  averageScore: 78.5,
-  bestTopic: "React",
-  worstTopic: "TypeScript",
+  totalQuizzesTaken: Math.floor(Math.random() * 50), // Simulating dynamic data
+  averageScore: Math.floor(Math.random() * 100),
+  bestTopic: ["React", "TypeScript", "JavaScript"][Math.floor(Math.random() * 3)],
+  worstTopic: ["CSS", "HTML", "Node.js"][Math.floor(Math.random() * 3)],
   quizzesByDifficulty: {
-    easy: 10,
-    medium: 8,
-    hard: 7,
+    easy: Math.floor(Math.random() * 15),
+    medium: Math.floor(Math.random() * 12),
+    hard: Math.floor(Math.random() * 10),
   },
 });
 
 const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => ([
-  { username: "User1", score: 95, topic: "React", date: "2024-03-10" },
-  { username: "User2", score: 90, topic: "TypeScript", date: "2024-03-09" },
-  { username: "User3", score: 85, topic: "JavaScript", date: "2024-03-08" },
+  { username: "User1", score: Math.floor(Math.random() * 100), topic: "React", date: "2024-03-10" },
+  { username: "User2", score: Math.floor(Math.random() * 100), topic: "TypeScript", date: "2024-03-09" },
+  { username: "User3", score: Math.floor(Math.random() * 100), topic: "JavaScript", date: "2024-03-08" },
 ]);
 
 const fetchQuizHistory = async (): Promise<QuizHistory[]> => ([
-  { id: "1", date: "2024-03-10", topic: "React", score: 8, totalQuestions: 10, difficulty: "medium" },
-  { id: "2", date: "2024-03-09", topic: "TypeScript", score: 7, totalQuestions: 10, difficulty: "hard" },
-  { id: "3", date: "2024-03-08", topic: "JavaScript", score: 9, totalQuestions: 10, difficulty: "easy" },
+  { id: "1", date: "2024-03-10", topic: "React", score: Math.floor(Math.random() * 10), totalQuestions: 10, difficulty: "medium" },
+  { id: "2", date: "2024-03-09", topic: "TypeScript", score: Math.floor(Math.random() * 10), totalQuestions: 10, difficulty: "hard" },
+  { id: "3", date: "2024-03-08", topic: "JavaScript", score: Math.floor(Math.random() * 10), totalQuestions: 10, difficulty: "easy" },
 ]);
 
+const StatCard = ({ icon: Icon, title, value, isLoading }: { 
+  icon: React.ElementType, 
+  title: string, 
+  value: string | number,
+  isLoading: boolean 
+}) => (
+  <Card className="p-6">
+    <div className="flex items-center gap-4">
+      <Icon className="w-8 h-8 text-indigo-500" />
+      <div>
+        <h3 className="text-lg font-medium mb-2">{title}</h3>
+        {isLoading ? (
+          <Skeleton className="h-8 w-24" />
+        ) : (
+          <p className="text-3xl font-bold">{value}</p>
+        )}
+      </div>
+    </div>
+  </Card>
+);
+
 const Dashboard = () => {
-  const { data: stats } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
+    refetchInterval: 5000, // Refetch every 5 seconds
   });
 
-  const { data: leaderboard } = useQuery({
+  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: fetchLeaderboard,
+    refetchInterval: 5000,
   });
 
-  const { data: history } = useQuery({
+  const { data: history, isLoading: historyLoading } = useQuery({
     queryKey: ['quizHistory'],
     queryFn: fetchQuizHistory,
+    refetchInterval: 5000,
   });
 
   const difficultyData = stats ? [
@@ -59,79 +84,79 @@ const Dashboard = () => {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <ChartBar className="w-8 h-8 text-indigo-500" />
-              <div>
-                <h3 className="text-lg font-medium mb-2">Total Quizzes</h3>
-                <p className="text-3xl font-bold">{stats?.totalQuizzesTaken}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <Brain className="w-8 h-8 text-purple-500" />
-              <div>
-                <h3 className="text-lg font-medium mb-2">Average Score</h3>
-                <p className="text-3xl font-bold">{stats?.averageScore}%</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <Trophy className="w-8 h-8 text-yellow-500" />
-              <div>
-                <h3 className="text-lg font-medium mb-2">Best Topic</h3>
-                <p className="text-3xl font-bold">{stats?.bestTopic}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <History className="w-8 h-8 text-rose-500" />
-              <div>
-                <h3 className="text-lg font-medium mb-2">Needs Improvement</h3>
-                <p className="text-3xl font-bold">{stats?.worstTopic}</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard 
+            icon={ChartBar} 
+            title="Total Quizzes" 
+            value={stats?.totalQuizzesTaken || 0}
+            isLoading={statsLoading}
+          />
+          <StatCard 
+            icon={Brain} 
+            title="Average Score" 
+            value={`${stats?.averageScore || 0}%`}
+            isLoading={statsLoading}
+          />
+          <StatCard 
+            icon={Trophy} 
+            title="Best Topic" 
+            value={stats?.bestTopic || '-'}
+            isLoading={statsLoading}
+          />
+          <StatCard 
+            icon={History} 
+            title="Needs Improvement" 
+            value={stats?.worstTopic || '-'}
+            isLoading={statsLoading}
+          />
         </div>
 
         {/* Quiz Distribution Chart */}
         <Card className="p-6">
           <h2 className="text-2xl font-semibold mb-6">Quizzes by Difficulty</h2>
-          <ChartContainer className="h-[300px]" config={{}}>
-            <BarChart data={difficultyData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip content={({ active, payload }) => (
-                active && payload?.length ? (
-                  <div className="bg-white p-2 border rounded shadow">
-                    <p>{`${payload[0].name}: ${payload[0].value} quizzes`}</p>
-                  </div>
-                ) : null
-              )} />
-              <Bar dataKey="value" fill="#8884d8" />
-            </BarChart>
-          </ChartContainer>
+          {statsLoading ? (
+            <div className="h-[300px] flex items-center justify-center">
+              <Skeleton className="h-full w-full" />
+            </div>
+          ) : (
+            <ChartContainer className="h-[300px]" config={{}}>
+              <BarChart data={difficultyData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip content={({ active, payload }) => (
+                  active && payload?.length ? (
+                    <div className="bg-white p-2 border rounded shadow">
+                      <p>{`${payload[0].name}: ${payload[0].value} quizzes`}</p>
+                    </div>
+                  ) : null
+                )} />
+                <Bar dataKey="value" fill="#8884d8" />
+              </BarChart>
+            </ChartContainer>
+          )}
         </Card>
 
         {/* Leaderboard */}
         <Card className="p-6">
           <h2 className="text-2xl font-semibold mb-6">Leaderboard</h2>
           <div className="space-y-4">
-            {leaderboard?.map((entry, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-                <div className="flex items-center gap-4">
-                  <span className="text-xl font-bold">{index + 1}</span>
-                  <span>{entry.username}</span>
+            {leaderboardLoading ? (
+              Array(3).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))
+            ) : (
+              leaderboard?.map((entry, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xl font-bold">{index + 1}</span>
+                    <span>{entry.username}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-gray-600">{entry.topic}</span>
+                    <span className="font-bold">{entry.score}%</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-gray-600">{entry.topic}</span>
-                  <span className="font-bold">{entry.score}%</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Card>
 
@@ -139,22 +164,28 @@ const Dashboard = () => {
         <Card className="p-6">
           <h2 className="text-2xl font-semibold mb-6">Recent Quizzes</h2>
           <div className="space-y-4">
-            {history?.map((quiz) => (
-              <div key={quiz.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-                <div>
-                  <h3 className="font-semibold">{quiz.topic}</h3>
-                  <p className="text-sm text-gray-600">{quiz.date}</p>
+            {historyLoading ? (
+              Array(3).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))
+            ) : (
+              history?.map((quiz) => (
+                <div key={quiz.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+                  <div>
+                    <h3 className="font-semibold">{quiz.topic}</h3>
+                    <p className="text-sm text-gray-600">{quiz.date}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="px-2 py-1 rounded bg-gray-100 text-sm">
+                      {quiz.difficulty}
+                    </span>
+                    <span className="font-bold">
+                      {quiz.score}/{quiz.totalQuestions}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="px-2 py-1 rounded bg-gray-100 text-sm">
-                    {quiz.difficulty}
-                  </span>
-                  <span className="font-bold">
-                    {quiz.score}/{quiz.totalQuestions}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Card>
       </div>
