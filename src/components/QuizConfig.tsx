@@ -49,7 +49,7 @@ const QuizConfigComponent = ({ onStart, isLoading }: QuizConfigProps) => {
         <div className="flex gap-4">
           <Input
             type="text"
-            placeholder="Enter a topic (e.g., 'Ancient Rome', 'Quantum Physics')"
+            placeholder="Enter a topic ('Anything u wanna to test urself in)"
             value={config.topic}
             onChange={(e) => setConfig(prev => ({ ...prev, topic: e.target.value }))}
             className="flex-1"

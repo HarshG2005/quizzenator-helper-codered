@@ -111,7 +111,7 @@ const Quiz = () => {
         </div>
         <Card className="p-6 shadow-xl bg-white/80 backdrop-blur-sm">
           <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
-            AI Quiz Generator
+            QUIZZER
           </h1>
           
           {!quizState.questions.length && !quizState.isLoading && (

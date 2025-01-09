@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -26,31 +26,34 @@
     --radius: 0.5rem;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
-.quiz-appear {
-  animation: quizAppear 0.5s ease-out forwards;
+/* Typewriter effect without forever blinking cursor */
+.typewriter {
+  overflow: hidden; /* Ensures the text is hidden initially */
+  white-space: nowrap; /* Prevents text from wrapping */
+  /* border-right: 4px solid #000; Creates the typing cursor */
+  width: 0; /* Start with no width */
+  animation: typing 3s steps(30) 1s forwards;
 }
 
-@keyframes quizAppear {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+/* Define typing animation */
+@keyframes typing {
   to {
-    opacity: 1;
-    transform: translateY(0);
+    width: 100%; /* Expand the width of the text */
   }
 }
 
+/* Gradient text effect */
 .gradient-text {
   background: linear-gradient(to right, #4f46e5, #9333ea);
   -webkit-background-clip: text;
@@ -58,6 +61,7 @@
   color: transparent;
 }
 
+/* Gradient border effect */
 .gradient-border {
   position: relative;
 }

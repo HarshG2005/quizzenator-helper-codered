@@ -66,14 +66,14 @@ const QuizQuestion = ({
           ))}
         </div>
 
-        <div className="mt-8 flex items-center justify-center">
+        {/* <div className="mt-8 flex items-center justify-center">
           <Button asChild variant="outline" className="gap-2">
             <Link to="/resources">
               <Book className="w-4 h-4" />
               View Study Resources
             </Link>
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

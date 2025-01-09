@@ -7,12 +7,12 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
   let text = '';
 
   // Since pdf-lib doesn't provide direct text extraction, we'll return a placeholder
-  // In a production environment, you'd want to use a more robust PDF text extraction library
+  // In a production environment, we will use a more robust PDF text extraction library
   return `PDF content from ${pages.length} pages`;
 };
 
 export const summarizePDF = async (text: string): Promise<string> => {
-  // Store API key in localStorage for demo purposes
+  // Store API key in localStorage for demo purposes for now(abhi ke liye later we will use evn)
   const apiKey = localStorage.getItem('GROQ_API_KEY');
   
   if (!apiKey) {
