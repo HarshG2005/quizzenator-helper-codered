@@ -21,20 +21,29 @@ const PDFUploader = ({ onPDFProcessed, isProcessing, setIsProcessing }: PDFUploa
       setIsProcessing(true);
       try {
         const text = await extractTextFromPDF(file);
+        if (!text) {
+          throw new Error('No text could be extracted from the PDF');
+        }
+        
         const summarized = await summarizePDF(text);
         onPDFProcessed(text, summarized, file.name.replace('.pdf', ''));
+        
         toast({
-          title: "PDF Processed",
+          title: "Success",
           description: "PDF has been successfully processed and summarized.",
         });
       } catch (error) {
+        console.error('PDF processing error:', error);
         toast({
           title: "Error",
-          description: "Failed to process PDF",
+          description: error instanceof Error ? error.message : "Failed to process PDF",
           variant: "destructive",
         });
       } finally {
         setIsProcessing(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     } else {
       toast({

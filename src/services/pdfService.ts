@@ -1,18 +1,29 @@
 import { PDFDocument } from 'pdf-lib';
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(arrayBuffer);
-  const pages = pdfDoc.getPages();
-  let text = '';
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pages = pdfDoc.getPages();
+    let fullText = '';
 
-  // Since pdf-lib doesn't provide direct text extraction, we'll return a placeholder
-  // In a production environment, we will use a more robust PDF text extraction library
-  return `PDF content from ${pages.length} pages`;
+    // Extract text from each page
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      // Since pdf-lib doesn't provide direct text extraction,
+      // we'll use a workaround to get text content
+      const text = await page.doc.saveAsBase64({ includeText: true });
+      fullText += `Page ${i + 1}:\n${text}\n\n`;
+    }
+
+    return fullText;
+  } catch (error) {
+    console.error('Error extracting text from PDF:', error);
+    throw new Error('Failed to extract text from PDF');
+  }
 };
 
 export const summarizePDF = async (text: string): Promise<string> => {
-  // Store API key in localStorage for demo purposes for now(abhi ke liye later we will use evn)
   const apiKey = localStorage.getItem('GROQ_API_KEY');
   
   if (!apiKey) {
@@ -31,20 +42,20 @@ export const summarizePDF = async (text: string): Promise<string> => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that summarizes text in a clear and concise way.'
+            content: 'You are a helpful assistant that creates clear, concise summaries. Focus on the main points and key takeaways. Structure the summary with bullet points for better readability.'
           },
           {
             role: 'user',
-            content: `Please summarize the following text: ${text}`
+            content: `Please provide a structured summary of the following text, highlighting the main points and key concepts: ${text}`
           }
         ],
-        temperature: 0.7,
+        temperature: 0.5,
         max_tokens: 2000,
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to summarize PDF');
+      throw new Error('Failed to generate summary');
     }
 
     const data = await response.json();
