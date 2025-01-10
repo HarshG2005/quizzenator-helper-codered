@@ -2,6 +2,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { supabase } from "@/integrations/supabase/client";
 
 // Initialize pdf.js worker
+/* @vite-ignore */
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.js',
   import.meta.url
@@ -13,7 +14,6 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     let fullText = '';
 
-    // Extract text from each page
     for (let i = 0; i < pdf.numPages; i++) {
       const page = await pdf.getPage(i + 1);
       const textContent = await page.getTextContent();
@@ -80,22 +80,72 @@ export const summarizePDF = async (text: string): Promise<string> => {
   }
 };
 
+export const chatWithPDF = async (pdfText: string, question: string): Promise<string> => {
+  const apiKey = localStorage.getItem('GROQ_API_KEY');
+  
+  if (!apiKey) {
+    throw new Error('Please set your Groq API key');
+  }
+
+  try {
+    const truncatedText = truncateText(pdfText);
+    
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'mixtral-8x7b-32768',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that answers questions based on the provided PDF content. Be concise and accurate in your responses.'
+          },
+          {
+            role: 'user',
+            content: `Context: ${truncatedText}\n\nQuestion: ${question}`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to process question');
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Error processing question:', error);
+    throw error;
+  }
+};
+
 export const saveQuizAttempt = async (
   topic: string,
   score: number,
   totalQuestions: number,
   difficulty: string
 ) => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    throw new Error('User not authenticated');
+  }
+
   const { error } = await supabase
     .from('quiz_attempts')
-    .insert([
-      {
-        topic,
-        score,
-        total_questions: totalQuestions,
-        difficulty,
-      },
-    ]);
+    .insert({
+      topic,
+      score,
+      total_questions: totalQuestions,
+      difficulty,
+      user_id: user.id
+    });
 
   if (error) {
     console.error('Error saving quiz attempt:', error);

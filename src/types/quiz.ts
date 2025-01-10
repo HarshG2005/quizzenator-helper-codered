@@ -2,6 +2,7 @@ export interface Question {
   question: string;
   options: string[];
   correctAnswer: string;
+  topic?: string;
 }
 
 export interface QuizConfig {
