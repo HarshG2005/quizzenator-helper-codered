@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
@@ -6,7 +7,7 @@ import type { DashboardStats, QuizHistory, LeaderboardEntry } from "@/types/quiz
 import { Trophy, ChartBar, History, Brain } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
- 
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock data - replace with actual API calls
 const fetchDashboardStats = async (): Promise<DashboardStats> => ({
@@ -55,10 +56,54 @@ const StatCard = ({ icon: Icon, title, value, isLoading }: {
 );
 
 const Dashboard = () => {
+  const [realtimeStats, setRealtimeStats] = useState<{
+    totalQuizzes: number;
+    averageScore: number;
+  }>({
+    totalQuizzes: 0,
+    averageScore: 0,
+  });
+
+  useEffect(() => {
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('public:quiz_attempts')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quiz_attempts'
+        },
+        async (payload) => {
+          // Fetch updated stats
+          const { data: attempts, error } = await supabase
+            .from('quiz_attempts')
+            .select('score, total_questions');
+
+          if (!error && attempts) {
+            const totalQuizzes = attempts.length;
+            const totalScore = attempts.reduce((sum, attempt) => sum + (attempt.score / attempt.total_questions) * 100, 0);
+            const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
+
+            setRealtimeStats({
+              totalQuizzes,
+              averageScore,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
-    refetchInterval: 300000, // Refetch every  seconds
+    refetchInterval: 300000,
   });
 
   const { data: leaderboard, isLoading: leaderboardLoading } = useQuery({
@@ -111,13 +156,13 @@ const Dashboard = () => {
             <StatCard 
               icon={ChartBar} 
               title="Total Quizzes" 
-              value={stats?.totalQuizzesTaken || 0}
+              value={realtimeStats.totalQuizzes || stats?.totalQuizzesTaken || 0}
               isLoading={statsLoading}
             />
             <StatCard 
               icon={Brain} 
               title="Average Score" 
-              value={`${stats?.averageScore || 0}%`}
+              value={`${realtimeStats.averageScore || stats?.averageScore || 0}%`}
               isLoading={statsLoading}
             />
             <StatCard 

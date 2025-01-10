@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { generateQuiz } from '@/services/quizService';
+import { saveQuizAttempt } from '@/services/pdfService';
 import type { QuizState, QuizResult } from '@/types/quiz';
 import { Loader2 } from "lucide-react";
 import QuizConfigComponent from './QuizConfig';
@@ -67,6 +68,16 @@ const Quiz = () => {
       const newScore = isCorrect ? prev.score + 1 : prev.score;
       const newIndex = prev.currentQuestionIndex + 1;
       const showResults = newIndex >= prev.questions.length;
+
+      if (showResults) {
+        // Save quiz attempt when quiz is completed
+        saveQuizAttempt(
+          prev.questions[0].topic || 'General',
+          newScore,
+          prev.questions.length,
+          'medium'
+        ).catch(console.error);
+      }
 
       return {
         ...prev,

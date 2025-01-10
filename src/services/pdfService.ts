@@ -1,4 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import { supabase } from "@/integrations/supabase/client";
 
 // Initialize pdf.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -19,7 +20,7 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
       const pageText = textContent.items
         .map((item: any) => item.str)
         .join(' ');
-      fullText += `Page ${i + 1}:\n${pageText}\n\n`;
+      fullText += `${pageText}\n\n`;
     }
 
     return fullText;
@@ -42,7 +43,6 @@ export const summarizePDF = async (text: string): Promise<string> => {
   }
 
   try {
-    // Truncate text to prevent 413 error
     const truncatedText = truncateText(text);
     
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -80,48 +80,25 @@ export const summarizePDF = async (text: string): Promise<string> => {
   }
 };
 
-export const chatWithPDF = async (text: string, question: string): Promise<string> => {
-  const apiKey = localStorage.getItem('GROQ_API_KEY');
-  
-  if (!apiKey) {
-    throw new Error('Please set your Groq API key');
-  }
-
-  try {
-    // Truncate text to prevent 413 error
-    const truncatedText = truncateText(text);
-    
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+export const saveQuizAttempt = async (
+  topic: string,
+  score: number,
+  totalQuestions: number,
+  difficulty: string
+) => {
+  const { error } = await supabase
+    .from('quiz_attempts')
+    .insert([
+      {
+        topic,
+        score,
+        total_questions: totalQuestions,
+        difficulty,
       },
-      body: JSON.stringify({
-        model: 'mixtral-8x7b-32768',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant that answers questions based on the provided context.'
-          },
-          {
-            role: 'user',
-            content: `Context: ${truncatedText}\n\nQuestion: ${question}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
+    ]);
 
-    if (!response.ok) {
-      throw new Error('Failed to process question');
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
-  } catch (error) {
-    console.error('Error processing question:', error);
+  if (error) {
+    console.error('Error saving quiz attempt:', error);
     throw error;
   }
 };
