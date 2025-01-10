@@ -1,9 +1,7 @@
-import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 
-// Initialize pdf.js worker with local worker file
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// Initialize pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
   try {
