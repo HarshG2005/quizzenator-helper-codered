@@ -1,22 +1,23 @@
 import { PDFDocument } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Initialize pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    const pages = pdfDoc.getPages();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     let fullText = '';
 
-    // Extract basic information from each page
-    for (let i = 0; i < pages.length; i++) {
-      const page = pages[i];
-      // Get page dimensions and metadata as a basic representation
-      const { width, height } = page.getSize();
-      fullText += `Page ${i + 1} (${width}x${height}):\n`;
-      
-      // Add page content placeholder
-      // Note: pdf-lib has limited text extraction capabilities
-      fullText += `[Page content ${i + 1}]\n\n`;
+    // Extract text from each page
+    for (let i = 0; i < pdf.numPages; i++) {
+      const page = await pdf.getPage(i + 1);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      fullText += `Page ${i + 1}:\n${pageText}\n\n`;
     }
 
     return fullText;
