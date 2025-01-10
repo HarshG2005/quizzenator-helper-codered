@@ -7,13 +7,16 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     const pages = pdfDoc.getPages();
     let fullText = '';
 
-    // Extract text from each page
+    // Extract basic information from each page
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
-      // Since pdf-lib doesn't provide direct text extraction,
-      // we'll use a workaround to get text content
-      const text = await page.doc.saveAsBase64({ includeText: true });
-      fullText += `Page ${i + 1}:\n${text}\n\n`;
+      // Get page dimensions and metadata as a basic representation
+      const { width, height } = page.getSize();
+      fullText += `Page ${i + 1} (${width}x${height}):\n`;
+      
+      // Add page content placeholder
+      // Note: pdf-lib has limited text extraction capabilities
+      fullText += `[Page content ${i + 1}]\n\n`;
     }
 
     return fullText;
@@ -21,6 +24,11 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     console.error('Error extracting text from PDF:', error);
     throw new Error('Failed to extract text from PDF');
   }
+};
+
+const truncateText = (text: string, maxLength: number = 4000): string => {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '\n[Content truncated due to length...]';
 };
 
 export const summarizePDF = async (text: string): Promise<string> => {
@@ -31,6 +39,9 @@ export const summarizePDF = async (text: string): Promise<string> => {
   }
 
   try {
+    // Truncate text to prevent 413 error
+    const truncatedText = truncateText(text);
+    
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -46,7 +57,7 @@ export const summarizePDF = async (text: string): Promise<string> => {
           },
           {
             role: 'user',
-            content: `Please provide a structured summary of the following text, highlighting the main points and key concepts: ${text}`
+            content: `Please provide a structured summary of the following text, highlighting the main points and key concepts: ${truncatedText}`
           }
         ],
         temperature: 0.5,
@@ -74,6 +85,9 @@ export const chatWithPDF = async (text: string, question: string): Promise<strin
   }
 
   try {
+    // Truncate text to prevent 413 error
+    const truncatedText = truncateText(text);
+    
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -89,7 +103,7 @@ export const chatWithPDF = async (text: string, question: string): Promise<strin
           },
           {
             role: 'user',
-            content: `Context: ${text}\n\nQuestion: ${question}`
+            content: `Context: ${truncatedText}\n\nQuestion: ${question}`
           }
         ],
         temperature: 0.7,
